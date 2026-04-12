@@ -1,0 +1,210 @@
+/* Settings Page Specific Styles */
+.settings-card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.settings-header {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-blue);
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 10px;
+}
+
+.settings-header i {
+    font-size: 1.2rem;
+}
+
+.form-section {
+    margin-bottom: 30px;
+}
+
+.form-section:last-child {
+    margin-bottom: 0;
+}
+
+.csv-upload-zone {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+    margin-bottom: 15px;
+}
+
+.csv-upload-zone:hover {
+    border-color: var(--primary-blue);
+    background-color: #e8f4ff;
+}
+
+.csv-upload-zone i {
+    font-size: 2rem;
+    color: #6c757d;
+    margin-bottom: 10px;
+}
+
+.location-tree {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.location-item {
+    padding: 5px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 4px;
+}
+
+.location-item:hover {
+    background-color: #f0f7ff;
+}
+
+.location-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.tab-pane {
+    padding: 20px 0;
+}
+
+/* Custom styling for file input */
+.file-input-wrapper {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+}
+
+.file-input-wrapper input[type=file] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.add-location-btn {
+    margin-top: 10px;
+}
+
+.hierarchy-tabs .nav-link {
+    color: #495057;
+}
+
+.hierarchy-tabs .nav-link.active {
+    color: var(--primary-blue);
+    font-weight: 500;
+    border-bottom: 2px solid var(--primary-blue);
+}
+
+/* User Management Specific Styles */
+.user-list {
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.user-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s;
+}
+
+.user-card:hover {
+    background-color: #f5f9ff;
+}
+
+.user-card .user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-card .user-email {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.user-card .user-name {
+    color: #666;
+    font-size: 0.85rem;
+}
+
+.user-card .user-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.no-users-message {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+.password-strength-meter {
+    height: 5px;
+    width: 100%;
+    background-color: #e0e0e0;
+    border-radius: 3px;
+    margin-top: 5px;
+}
+
+.password-strength-meter .strength {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s;
+}
+
+.strength-weak {
+    width: 33%;
+    background-color: #dc3545;
+}
+
+.strength-medium {
+    width: 66%;
+    background-color: #ffc107;
+}
+
+.strength-strong {
+    width: 100%;
+    background-color: #28a745;
+}
+
+.password-feedback {
+    font-size: 0.75rem;
+    margin-top: 5px;
+}
+
+.user-role-badge {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    color: white;
+    background-color: #6c757d;
+    display: inline-block;
+    margin-left: 8px;
+}
+
+.role-admin {
+    background-color: #dc3545;
+}
+
+.role-user {
+    background-color: #007bff;
+}

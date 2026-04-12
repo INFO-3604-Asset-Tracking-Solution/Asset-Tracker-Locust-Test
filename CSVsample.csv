@@ -1,0 +1,21 @@
+﻿Item,Asset Tag,Brand,Model,Serial Number,Location,Condition,Assignee
+Laptop,1,Lenovo,ThinkPad X1,UV3B5BDKHU,1,Good,1
+Projector,2,Epson,X300,JPOC7Z3J5G,2,Good,2
+Desktop,3,Dell,OptiPlex,K6ONGRLCDX,3,Missing,3
+Printer,4,HP,LaserJet,3PV71SB2LS,4,Good,4
+Tablet,5,Apple,iPad Pro,TM3NB1JH8Z,5,Good,5
+Monitor,6,Dell,UltraSharp,PGJJQHU5JP,6,Good,6
+Server,7,Dell,PowerEdge,TTHLDCNC6Y,7,Misplaced,7
+Scanner,8,Canon,ScanJet,53BDBIJEN9,8,Lost,8
+Router,9,Cisco,2900,KBF4NNNLKJ,9,Good,9
+Switch,10,Netgear,24-Port,5W7TERLX98,10,Good,10
+External HDD,11,Western Digital,Elements,PSDNW1XE55,11,Good,11
+Smartphone,12,Apple,iPhone 14,2XQBZT5XZ7,12,Good,12
+Keyboard,13,Logitech,MX Keys,EXV6RZ1LLH,13,Good,13
+Mouse,14,Logitech,MX Master,6ILCLTO57K,14,Missing,14
+Docking Station,15,Dell,WD19,FYNXA6LRON,15,Good,15
+Headphones,16,Sony,WH-1000XM4,R774T3241B,16,Good,16
+Webcam,17,Logitech,C920,ERN81GEDF2,17,Good,17
+Microphone,18,Blue,Yeti,FRVC43U9VK,18,Good,18
+USB,19,SanDisk,Ultra,IUXZCHX11W,19,Good,19
+NAS Storage,20,Synology,DS220+,ECQXHAI8P9,20,Lost,20

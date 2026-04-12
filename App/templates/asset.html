@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iGOVTT - Asset Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <style>
+        .detail-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .detail-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-blue);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .detail-title i {
+            font-size: 1.2rem;
+        }
+        
+        .detail-field {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 15px;
+        }
+        
+        .detail-field:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .field-label {
+            font-weight: 500;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .field-value {
+            font-size: 1.1rem;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-badge.good {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-badge.missing {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-badge.misplaced {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-badge.lost {
+            background-color: #d6d8db;
+            color: #383d41;
+        }
+        
+        .scan-item {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .scan-item:last-child {
+            border-bottom: none;
+        }
+        
+        .scan-time {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .scan-details {
+            margin-top: 5px;
+        }
+        
+        .scan-notes {
+            margin-top: 5px;
+            font-style: italic;
+            color: #666;
+            white-space: pre-line;
+        }
+        
+        .status-history-badge {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+            margin-left: 5px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="profile-section">
+            <img src="{{ url_for('static', filename='images/profile_icon.png') }}" alt="Profile" class="profile-image">
+            <h5 class="mb-1">{{current_user.username}}</h5>
+            <small class="text-muted">{{current_user.email}}</small>
+        </div>
+
+        <nav>
+            <a href="/inventory" class="nav-item">Inventory</a>
+            <a href="/audit" class="nav-item">Area Audit</a>
+            <a href="/discrepancy-report" class="nav-item">Discrepancy Report</a>
+        </nav>
+        
+        <div class="sidebar-bottom">
+            <a href="/settings" class="nav-item">Settings</a>
+            <a href="/logout" class="nav-item text-danger">Log Out</a>
+        </div>
+    </div>
+
+    <div class="content-area">
+    <!-- Edit Button - Add next to the Back button -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Asset Report</h2>
+            <div>
+                <button class="btn btn-primary btn-md me-2" data-bs-toggle="modal" data-bs-target="#editAssetModal">
+                    <i class="bi bi-pencil"></i> Edit Asset
+                </button>
+                <a href="{{ request.referrer or url_for('inventory_views.inventory_page') }}" class="btn btn-outline-secondary btn-md">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+
+        <!-- Edit Asset Modal -->
+        <div class="modal fade" id="editAssetModal" tabindex="-1" aria-labelledby="editAssetModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editAssetModalLabel">Edit Asset</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editAssetForm">
+                            <input type="hidden" id="asset_id" name="asset_id" value="{{ asset.id }}">
+                            
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <input type="text" class="form-control" id="description" name="description" value="{{ asset.description }}">
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="brand" class="form-label">Brand</label>
+                                    <input type="text" class="form-control" id="brand" name="brand" value="{{ asset.brand }}">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="model" class="form-label">Model</label>
+                                    <input type="text" class="form-control" id="model" name="model" value="{{ asset.model }}">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="serial_number" class="form-label">Serial Number</label>
+                                <input type="text" class="form-control" id="serial_number" name="serial_number" value="{{ asset.serial_number }}">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="assignee_id" class="form-label">Assigned To</label>
+                                <select class="form-select" id="assignee_id" name="assignee_id">
+                                    <option value="{{ asset.assignee_id }}" selected>{{ assignee_name }}</option>
+                                    <!-- Additional assignees will be loaded dynamically -->
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="notes" class="form-label">Notes</label>
+                                <textarea class="form-control" id="notes" name="notes" rows="3">{{ asset.notes }}</textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-md" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary btn-md" id="saveAssetBtn">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+
+        <div class="row">
+            <!-- Basic Information Card -->
+            <div class="col-md-6 mb-4">
+                <div class="detail-card h-100">
+                    <div class="detail-title">
+                        <i class="bi bi-info-circle"></i> Basic Information
+                    </div>
+                    
+                    <div class="detail-field">
+                        <div class="field-label">Asset ID</div>
+                        <div class="field-value">{{ asset.id }}</div>
+                    </div>
+                    
+                    <div class="detail-field">
+                        <div class="field-label">Description</div>
+                        <div class="field-value">{{ asset.description }}</div>
+                    </div>
+                    
+                    <div class="detail-field">
+                        <div class="field-label">Brand / Model</div>
+                        <div class="field-value">{{ asset.brand }} {{ asset.model }}</div>
+                    </div>
+                    
+                    <div class="detail-field">
+                        <div class="field-label">Serial Number</div>
+                        <div class="field-value">{{ asset.serial_number }}</div>
+                    </div>
+                    
+                    <div class="detail-field">
+                        <div class="field-label">Status</div>
+                        <div class="field-value">
+                            <span class="status-badge {{ asset.status.lower() }}">{{ asset.status }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-field">
+                        <div class="field-label">Last Updated</div>
+                        <div class="field-value">{{ asset.last_update.strftime('%Y-%m-%d %H:%M') if asset.last_update else 'Unknown' }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Location & Assignment Card -->
+            <div class="col-md-6 mb-4">
+                <div class="detail-card h-100">
+                    <div class="detail-title">
+                        <i class="bi bi-geo-alt"></i> Location & Assignment
+                    </div>
+                    
+                    <div class="detail-field">
+                        <div class="field-label">Assigned Room</div>
+                        <div class="field-value">{{ room_name }}</div>
+                    </div>
+                    
+                    <div class="detail-field">
+                        <div class="field-label">Current Location</div>
+                        <div class="field-value">
+                            {{ last_location_name }}
+                            {% if asset.room_id != asset.last_located %}
+                            <span class="badge bg-warning text-dark">Misplaced</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="detail-field">
+                        <div class="field-label">Assigned To</div>
+                        <div class="field-value">{{ assignee_name }}</div>
+                    </div>
+                    
+                    <div class="detail-field">
+                        <div class="field-label">Notes</div>
+                        <div class="field-value">{{ asset.notes or 'No notes available' }}</div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        {% if asset.status in ['Missing', 'Misplaced'] %}
+                        <button class="btn btn-success mark-found-btn" data-asset-id="{{ asset.id }}" data-asset-name="{{ asset.description }}">
+                            <i class="bi bi-check-circle"></i> Mark as Found
+                        </button>
+                        
+                        <button class="btn btn-primary found-relocate-btn" data-asset-id="{{ asset.id }}" data-asset-name="{{ asset.description }}">
+                            <i class="bi bi-geo-alt"></i> Found & Relocated
+                        </button>
+                        
+                        <button class="btn btn-danger mark-lost-btn" data-asset-id="{{ asset.id }}" data-asset-name="{{ asset.description }}">
+                            <i class="bi bi-x-circle"></i> Mark as Lost
+                        </button>
+                        {% elif asset.status == 'Lost' %}
+                        <button class="btn btn-success mark-found-btn" data-asset-id="{{ asset.id }}" data-asset-name="{{ asset.description }}">
+                            <i class="bi bi-check-circle"></i> Found - Return to Inventory
+                        </button>
+                        {% endif %}
+                    </div>
+
+                    <div class="action-buttons mt-2">
+                        <button class="btn btn-secondary" id="generateQRBtn" data-asset-id="{{ asset.id }}" data-asset-name="{{ asset.description }}">
+                            <i class="bi bi-qr-code"></i> Generate QR Code
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scan History Card -->
+        <div class="detail-card mb-4">
+            <div class="detail-title">
+                <i class="bi bi-clock-history"></i> Scan History
+            </div>
+            
+            <div class="scan-history">
+                {% if scan_events %}
+                    {% for event in scan_events %}
+                    <div class="scan-item">
+                        <div class="scan-time">{{ event.scan_time.strftime('%Y-%m-%d %H:%M') }}</div>
+                        <div class="scan-details">
+                            <strong>Room:</strong> {{ event.room_name }}
+                            <span class="badge bg-secondary status-history-badge">{{ event.status }}</span>
+                        </div>
+                        {% if event.notes %}
+                        <div class="scan-notes">{{ event.notes }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="text-center py-3">
+                    <p class="text-muted">No scan history available</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Relocation -->
+    <div class="modal fade" id="relocationModal" tabindex="-1" aria-labelledby="relocationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="relocationModalLabel">Asset Found & Relocated</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Select the new location for this asset:</p>
+                    <p class="asset-info mb-3 fw-bold"></p>
+                    
+                    <div class="form-group mb-3">
+                        <label for="roomSelect" class="form-label">New Location:</label>
+                        <select class="form-select" id="roomSelect" required>
+                            <option value="">Select a room...</option>
+                            <!-- Rooms will be populated dynamically -->
+                        </select>
+                        <div class="form-text">
+                            The asset will be marked as Found and its assigned location will be updated to the selected room.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmRelocationBtn">Confirm Relocation</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal for displaying status messages -->
+    <div class="modal fade" id="statusModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="statusTitle">Status Update</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="statusMessage">
+                    <!-- Status message will be inserted here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="qrCodeModal" tabindex="-1" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="qrCodeModalLabel">Asset QR Code</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="qrCodeContainer" class="mb-3"></div>
+                    <p id="qrAssetInfo" class="fw-bold mb-3"></p>
+                    <div class="text-muted small mb-3">
+                        This QR code contains the asset ID and name for scanning during audits.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="downloadQRBtn">
+                        <i class="bi bi-download"></i> Download
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <script>
+        // JavaScript for the Asset Report Page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up the Relocation modal
+            const relocationModal = new bootstrap.Modal(document.getElementById('relocationModal'));
+            let currentAssetId = null;
+            let currentAssetName = null;
+            
+            // Load all rooms for relocation dropdown
+            async function loadRooms() {
+                try {
+                    const response = await fetch('/api/rooms/all');
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch rooms');
+                    }
+                    
+                    const rooms = await response.json();
+                    const roomSelect = document.getElementById('roomSelect');
+                    roomSelect.innerHTML = '<option value="">Select a room...</option>';
+                    
+                    rooms.forEach(room => {
+                        const option = document.createElement('option');
+                        option.value = room.room_id;
+                        option.textContent = room.room_name;
+                        roomSelect.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error('Error loading rooms:', error);
+                    showStatusMessage(
+                        'Error', 
+                        'Failed to load rooms for relocation. Some features may not work properly.',
+                        'warning'
+                    );
+                }
+            }
+            
+            loadRooms();
+            
+            // Event listeners for action buttons
+            document.addEventListener('click', function(e) {
+                // Mark as Lost button
+                if (e.target.closest('.mark-lost-btn')) {
+                    const button = e.target.closest('.mark-lost-btn');
+                    const assetId = button.dataset.assetId;
+                    const assetName = button.dataset.assetName;
+                    
+                    if (confirm(`Are you sure you want to mark ${assetName} (${assetId}) as Lost? This action cannot be undone.`)) {
+                        markAssetAsLost(assetId, assetName);
+                    }
+                }
+                
+                // Mark as Found button
+                if (e.target.closest('.mark-found-btn')) {
+                    const button = e.target.closest('.mark-found-btn');
+                    const assetId = button.dataset.assetId;
+                    const assetName = button.dataset.assetName;
+                    
+                    if (confirm(`Mark ${assetName} (${assetId}) as Found and return to its assigned room?`)) {
+                        markAssetAsFound(assetId, assetName);
+                    }
+                }
+                
+                // Found and Relocated button
+                if (e.target.closest('.found-relocate-btn')) {
+                    const button = e.target.closest('.found-relocate-btn');
+                    currentAssetId = button.dataset.assetId;
+                    currentAssetName = button.dataset.assetName;
+                    
+                    // Update modal with asset info
+                    document.querySelector('#relocationModal .asset-info').textContent = 
+                        `Asset: ${currentAssetName} (${currentAssetId})`;
+                    
+                    // Show the modal
+                    relocationModal.show();
+                }
+            });
+            
+            // Confirm button in Relocation modal
+            document.getElementById('confirmRelocationBtn').addEventListener('click', function() {
+                const roomSelect = document.getElementById('roomSelect');
+                const selectedRoomId = roomSelect.value;
+                
+                if (!selectedRoomId) {
+                    alert('Please select a room for relocation');
+                    return;
+                }
+                
+                if (currentAssetId) {
+                    markAssetAsFoundAndRelocated(currentAssetId, currentAssetName, selectedRoomId);
+                    relocationModal.hide();
+                }
+            });
+            
+            // Function to handle marking an asset as lost
+            async function markAssetAsLost(assetId, assetName) {
+                try {
+                    const response = await fetch(`/api/asset/${assetId}/mark-lost`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        showStatusMessage(
+                            'Asset Marked as Lost', 
+                            `${assetName} (${assetId}) has been marked as Lost. This asset will be moved to the Lost Assets report.`,
+                            'success'
+                        );
+                        
+                        // Reload the page after short delay
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        showStatusMessage(
+                            'Error', 
+                            result.message || 'Failed to mark asset as lost. Please try again.',
+                            'danger'
+                        );
+                    }
+                } catch (error) {
+                    console.error('Error marking asset as lost:', error);
+                    showStatusMessage(
+                        'Error', 
+                        'An error occurred while trying to mark the asset as lost. Please try again.',
+                        'danger'
+                    );
+                }
+            }
+            
+            // Function to handle marking an asset as found
+            async function markAssetAsFound(assetId, assetName) {
+                try {
+                    const response = await fetch(`/api/asset/${assetId}/mark-found`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        showStatusMessage(
+                            'Asset Marked as Found', 
+                            `${assetName} (${assetId}) has been marked as Found and returned to its assigned room.`,
+                            'success'
+                        );
+                        
+                        // Reload the page after short delay
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        showStatusMessage(
+                            'Error', 
+                            result.message || 'Failed to mark asset as found. Please try again.',
+                            'danger'
+                        );
+                    }
+                } catch (error) {
+                    console.error('Error marking asset as found:', error);
+                    showStatusMessage(
+                        'Error', 
+                        'An error occurred while trying to mark the asset as found. Please try again.',
+                        'danger'
+                    );
+                }
+            }
+            
+            // Function to handle marking an asset as found and relocated
+            async function markAssetAsFoundAndRelocated(assetId, assetName, newRoomId) {
+                try {
+                    const response = await fetch(`/api/asset/${assetId}/relocate`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            roomId: newRoomId
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        showStatusMessage(
+                            'Asset Relocated', 
+                            `${assetName} (${assetId}) has been marked as Found and relocated to the new room.`,
+                            'success'
+                        );
+                        
+                        // Reload the page after short delay
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        showStatusMessage(
+                            'Error', 
+                            result.message || 'Failed to relocate asset. Please try again.',
+                            'danger'
+                        );
+                    }
+                } catch (error) {
+                    console.error('Error relocating asset:', error);
+                    showStatusMessage(
+                        'Error', 
+                        'An error occurred while trying to relocate the asset. Please try again.',
+                        'danger'
+                    );
+                }
+            }
+            
+            // Function to show status messages in modal
+            function showStatusMessage(title, message, type) {
+                const statusModal = new bootstrap.Modal(document.getElementById('statusModal'));
+                const statusTitle = document.getElementById('statusTitle');
+                const statusMessage = document.getElementById('statusMessage');
+                
+                statusTitle.textContent = title;
+                statusMessage.innerHTML = message;
+                
+                // Set the appropriate class based on the message type
+                statusMessage.className = '';
+                if (type === 'success') {
+                    statusMessage.classList.add('text-success');
+                } else if (type === 'danger') {
+                    statusMessage.classList.add('text-danger');
+                } else if (type === 'warning') {
+                    statusMessage.classList.add('text-warning');
+                }
+                
+                statusModal.show();
+            }
+        });
+
+        // JavaScript for the Asset Edit functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load assignees when modal opens
+            const editModal = document.getElementById('editAssetModal');
+            if (editModal) {
+                editModal.addEventListener('show.bs.modal', loadAssignees);
+            }
+            
+            // Setup save button event handler
+            const saveButton = document.getElementById('saveAssetBtn');
+            if (saveButton) {
+                saveButton.addEventListener('click', saveAssetChanges);
+            }
+            
+            // Function to load assignees for dropdown
+            async function loadAssignees() {
+                try {
+                    const response = await fetch('/api/assignees');
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch assignees');
+                    }
+                    
+                    const assignees = await response.json();
+                    const assigneeSelect = document.getElementById('assignee_id');
+                    const currentAssigneeId = assigneeSelect.value;
+                    
+                    // Store current selected option text
+                    const currentAssigneeName = assigneeSelect.options[0].text;
+                    
+                    // Clear dropdown but keep current selection
+                    assigneeSelect.innerHTML = '';
+                    
+                    // Add current assignee back as first option
+                    const currentOption = document.createElement('option');
+                    currentOption.value = currentAssigneeId;
+                    currentOption.textContent = currentAssigneeName;
+                    assigneeSelect.appendChild(currentOption);
+                    
+                    // Add all other assignees
+                    assignees.forEach(assignee => {
+                        // Skip if this is the current assignee (already added)
+                        if (assignee.id == currentAssigneeId) return;
+                        
+                        const option = document.createElement('option');
+                        option.value = assignee.id;
+                        option.textContent = `${assignee.fname} ${assignee.lname}`;
+                        assigneeSelect.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error('Error loading assignees:', error);
+                    showStatusMessage(
+                        'Error', 
+                        'Failed to load assignees. Some features may not work properly.',
+                        'warning'
+                    );
+                }
+            }
+            
+            // Function to save asset changes
+            async function saveAssetChanges() {
+                // Get form data
+                const assetId = document.getElementById('asset_id').value;
+                const description = document.getElementById('description').value;
+                const brand = document.getElementById('brand').value;
+                const model = document.getElementById('model').value;
+                const serialNumber = document.getElementById('serial_number').value;
+                const assigneeId = document.getElementById('assignee_id').value;
+                const notes = document.getElementById('notes').value;
+                
+                // Validation
+                if (!description) {
+                    showStatusMessage('Error', 'Description cannot be empty', 'danger');
+                    return;
+                }
+                
+                // Prepare data for submission
+                const assetData = {
+                    id: assetId,
+                    description: description,
+                    brand: brand,
+                    model: model,
+                    serial_number: serialNumber,
+                    assignee_id: assigneeId,
+                    notes: notes
+                };
+                
+                try {
+                    const response = await fetch(`/api/asset/${assetId}/update`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(assetData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        // Close the modal
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('editAssetModal'));
+                        modal.hide();
+                        
+                        showStatusMessage(
+                            'Success', 
+                            'Asset has been updated successfully.',
+                            'success'
+                        );
+                        
+                        // Reload the page after a short delay
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        showStatusMessage(
+                            'Error', 
+                            result.message || 'Failed to update asset. Please try again.',
+                            'danger'
+                        );
+                    }
+                } catch (error) {
+                    console.error('Error updating asset:', error);
+                    showStatusMessage(
+                        'Error', 
+                        'An error occurred while trying to update the asset. Please try again.',
+                        'danger'
+                    );
+                }
+            }
+            
+            // Function to show status messages in modal (reusing existing function)
+            function showStatusMessage(title, message, type) {
+                const statusModal = new bootstrap.Modal(document.getElementById('statusModal'));
+                const statusTitle = document.getElementById('statusTitle');
+                const statusMessage = document.getElementById('statusMessage');
+                
+                statusTitle.textContent = title;
+                statusMessage.innerHTML = message;
+                
+                // Set the appropriate class based on the message type
+                statusMessage.className = '';
+                if (type === 'success') {
+                    statusMessage.classList.add('text-success');
+                } else if (type === 'danger') {
+                    statusMessage.classList.add('text-danger');
+                } else if (type === 'warning') {
+                    statusMessage.classList.add('text-warning');
+                }
+                
+                statusModal.show();
+            }
+        });
+    </script>
+
+    <script>
+        // QR Code functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM loaded, setting up QR code functionality");
+            
+            // Set up QR code generation
+            const generateBtn = document.getElementById('generateQRBtn');
+            if (generateBtn) {
+                generateBtn.addEventListener('click', function() {
+                    const assetId = this.getAttribute('data-asset-id');
+                    const assetName = this.getAttribute('data-asset-name');
+                    generateQRCode(assetId, assetName);
+                });
+            }
+            
+            // Set up Download button
+            const downloadBtn = document.getElementById('downloadQRBtn');
+            if (downloadBtn) {
+                downloadBtn.addEventListener('click', downloadQRCode);
+            }
+        });
+
+        function generateQRCode(assetId, assetName) {
+            console.log("Generating QR code for:", assetId, assetName);
+            
+            // Clear previous QR code
+            const container = document.getElementById('qrCodeContainer');
+            if (!container) {
+                console.error("QR code container not found");
+                return;
+            }
+            
+            // Show loading indicator
+            container.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
+            
+            // Show asset info
+            const infoElement = document.getElementById('qrAssetInfo');
+            if (infoElement) {
+                infoElement.textContent = `${assetName} (${assetId})`;
+            }
+            
+            // Format: assetId|assetName
+            const qrData = `${assetId}|${assetName}`;
+            
+            // Use QR code generator API (no library needed)
+            const img = new Image();
+            img.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}&margin=10`;
+            img.alt = "Asset QR Code";
+            img.className = "img-fluid";
+            
+            // When image loads successfully
+            img.onload = function() {
+                container.innerHTML = '';
+                container.appendChild(img);
+                console.log("QR code generated successfully");
+            };
+            
+            // Handle image load error
+            img.onerror = function() {
+                container.innerHTML = '<div class="alert alert-danger">Failed to generate QR code. Please check your internet connection.</div>';
+                console.error("Failed to load QR code image");
+            };
+            
+            // Show the modal
+            const qrModal = new bootstrap.Modal(document.getElementById('qrCodeModal'));
+            qrModal.show();
+        }
+
+        function downloadQRCode() {
+            // Get asset info for filename
+            const assetInfo = document.getElementById('qrAssetInfo').textContent;
+            const safeName = assetInfo.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            
+            // Extract the asset ID and name
+            const matches = assetInfo.match(/(.+) \((.+)\)/);
+            if (!matches || matches.length < 3) {
+                console.error("Could not parse asset info");
+                return;
+            }
+            
+            const assetName = matches[1];
+            const assetId = matches[2];
+            const qrData = `${assetId}|${assetName}`;
+            
+            // Create a fetch request to get the image data
+            fetch(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrData)}&margin=10`)
+                .then(response => response.blob())
+                .then(blob => {
+                    // Create a blob URL
+                    const blobUrl = URL.createObjectURL(blob);
+                    
+                    // Create a download link
+                    const link = document.createElement('a');
+                    link.href = blobUrl;
+                    link.download = `asset_qr_${safeName}.png`;
+                    
+                    // Append to document, click, and remove
+                    document.body.appendChild(link);
+                    link.click();
+                    
+                    // Clean up
+                    setTimeout(() => {
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(blobUrl);
+                    }, 100);
+                })
+                .catch(error => {
+                    console.error("Error downloading QR code:", error);
+                    alert("Failed to download QR code. Please try again.");
+                });
+        }
+    </script>
+    
+</body>
+</html>

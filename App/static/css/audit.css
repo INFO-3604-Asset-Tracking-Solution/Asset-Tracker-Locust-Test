@@ -1,0 +1,475 @@
+/* Audit Page Styles */
+
+/* Search Container and Controls */
+.search-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+    background-color: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.manual-search-group {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.manual-search-group input {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    height: 38px;
+}
+
+.manual-search-group button {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* Audit Method Buttons */
+.audit-method-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-start;
+    margin-bottom: 1.5rem;
+}
+
+.audit-method-btn {
+    width: 120px;
+    height: 60px;
+    padding: 8px;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+}
+
+.audit-method-btn.btn-primary {
+    background-color: var(--primary-blue); 
+    border-color: var(--primary-blue);
+}
+
+.audit-method-btn:hover {
+    background-color: #e9ecef !important;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.audit-method-btn img {
+    margin-bottom: 5px;
+    height: 20px;
+    width: auto;
+}
+
+/* Audit Controls */
+.audit-controls {
+    transition: all 0.3s ease;
+}
+
+#toggleRoomAudit {
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    border-radius: 0.375rem;
+}
+
+.audit-controls .btn {
+    line-height: 1.2;
+}
+
+/* Toggle button states */
+#toggleRoomAudit.active {
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
+    padding-right: 2.5rem;
+}
+
+#toggleRoomAudit.active:after {
+    content: " ";
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    background: white;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 6h12v12H6z'/%3E%3C/svg%3E");
+}
+
+#cancelRoomAudit {
+    width: 38px;
+    height: 38px;
+    transition: all 0.2s ease;
+    border-radius: 0.375rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#cancelRoomAudit:hover {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+/* Scanning Indicators */
+.scan-indicator {
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    animation: pulse 2s infinite;
+}
+
+.scan-indicator i {
+    font-size: 1.5rem;
+    margin-right: 15px;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+    }
+}
+
+/* Asset Status Indicators */
+.found-yes {
+    color: var(--success-color);
+    font-weight: bold;
+}
+
+.found-no {
+    color: var(--danger-color);
+    font-weight: bold;
+}
+
+/* Assets Tables */
+.assets-container {
+    background-color: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.asset-scan-method .badge {
+    font-size: 0.8rem;
+    font-weight: normal;
+    text-transform: capitalize;
+    padding: 0.35em 0.65em;
+}
+
+.assets-container h4 {
+    margin-bottom: 1rem;
+    color: var(--primary-blue);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.assets-container h4 i {
+    margin-right: 0.5rem;
+}
+
+/* Undo button styling */
+.undo-scan-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    border-radius: 0.2rem;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.undo-scan-btn:hover {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.undo-scan-btn i {
+    font-size: 0.8rem;
+    margin-right: 3px;
+}
+
+/* Animation for adding/removing assets */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-10px); }
+}
+
+.scanned-asset-adding {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+.scanned-asset-removing {
+    animation: fadeOut 0.3s ease-out forwards;
+}
+
+/* Responsive table adjustments */
+@media (max-width: 992px) {
+    .inventory-table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .asset-actions {
+        white-space: nowrap;
+    }
+    
+    .undo-scan-btn {
+        padding: 0.2rem 0.4rem;
+    }
+    
+    .undo-scan-btn span {
+        display: none; /* Hide text on smaller screens */
+    }
+    
+    .asset-scan-method .badge {
+        padding: 0.2em 0.4em;
+        font-size: 0.75rem;
+    }
+}
+
+/* Scan Progress */
+.scan-counter {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.scan-progress-bar {
+    height: 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+.scan-message {
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.scan-message i {
+    font-size: 1.2rem;
+    margin-right: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .audit-method-buttons {
+        flex-wrap: wrap;
+    }
+    
+    .audit-method-btn {
+        width: calc(50% - 0.5rem);
+        margin-bottom: 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .audit-method-btn {
+        width: 100%;
+    }
+    
+    .manual-search-group {
+        flex-direction: column;
+    }
+    
+    .manual-search-group input,
+    .manual-search-group button {
+        width: 100%;
+        border-radius: 4px;
+        margin-bottom: 5px;
+    }
+}
+
+/* Selection styles */
+.selection-panel {
+    background-color: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.selection-panel label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #555;
+}
+
+.selection-panel .form-select {
+    transition: all 0.2s ease;
+}
+
+.selection-panel .form-select:hover {
+    border-color: var(--primary-blue);
+}
+
+.selection-panel .form-select:focus {
+    box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+}
+
+/* Animation for asset found */
+@keyframes highlightGreen {
+    0% { background-color: rgba(40, 167, 69, 0.3); }
+    100% { background-color: transparent; }
+}
+
+.highlight-success {
+    animation: highlightGreen 1.5s ease-in-out;
+}
+
+/* Table styling improvements */
+.inventory-table thead th {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa;
+    z-index: 10;
+    padding: 12px 16px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.inventory-table tbody td {
+    padding: 12px 16px;
+    vertical-align: middle;
+}
+
+.inventory-table tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+* QR Code Scanning Styles */
+.qr-scanner-container {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    margin-bottom: 15px;
+    overflow: hidden;
+    border-radius: 8px;
+    background-color: #000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.qr-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.qr-canvas {
+    display: none;
+}
+
+.qr-scan-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-scan-region {
+    width: 200px;
+    height: 200px;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    position: relative;
+    animation: pulse 2s infinite;
+}
+
+.qr-scan-region::before,
+.qr-scan-region::after {
+    content: '';
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border-color: var(--primary-blue);
+    border-style: solid;
+    border-width: 0;
+}
+
+.qr-scan-region::before {
+    top: -2px;
+    left: -2px;
+    border-top-width: 2px;
+    border-left-width: 2px;
+    border-top-left-radius: 10px;
+}
+
+.qr-scan-region::after {
+    bottom: -2px;
+    right: -2px;
+    border-bottom-width: 2px;
+    border-right-width: 2px;
+    border-bottom-right-radius: 10px;
+}
+
+.qr-scan-instruction {
+    color: #fff;
+    margin-top: 20px;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+
+/* QR code container in modal */
+#qrCodeContainer {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    display: inline-block;
+    margin: 0 auto;
+}
+
+#qrCodeContainer canvas {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+/* Responsive styles for QR scanner */
+@media (max-width: 576px) {
+    .qr-scanner-container {
+        height: 250px;
+    }
+    
+    .qr-scan-region {
+        width: 180px;
+        height: 180px;
+    }
+}
+

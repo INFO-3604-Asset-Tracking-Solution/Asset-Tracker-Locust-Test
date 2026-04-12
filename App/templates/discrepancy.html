@@ -1,0 +1,244 @@
+{% extends "layout.html" %}
+
+{% set active_page = 'discrepancy' %}
+
+{% block title %}iGOVTT - Discrepancy Report{% endblock %}
+
+{% block page_css %}
+<link href="{{ url_for('static', filename='css/discrepancy.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Discrepancy Report</h2>
+
+<!-- Filter Section -->
+<div class="filter-section">
+    <a href="#" class="filter-badge Good" id="filter-all" onclick="filterDiscrepancies('all'); return false;">
+        All <span class="count-badge">0</span>
+    </a>
+    <a href="#" class="filter-badge" id="filter-missing" onclick="filterDiscrepancies('missing'); return false;">
+        Missing <span class="count-badge">0</span>
+    </a>
+    <a href="#" class="filter-badge" id="filter-misplaced" onclick="filterDiscrepancies('misplaced'); return false;">
+        Misplaced <span class="count-badge">0</span>
+    </a>
+
+    <!-- Add download button -->
+    <button class="btn btn-outline-primary btn-sm ms-auto" id="downloadReportBtn">
+        <i class="bi bi-download me-1"></i> Download Report
+    </button>
+</div>
+
+<!-- Bulk Actions Toolbar -->
+<div class="bulk-actions-toolbar" id="bulk-actions-toolbar">
+    <div class="d-flex align-items-center">
+        <div class="select-all-container form-check">
+            <input class="form-check-input" type="checkbox" value="" id="selectAllCheckbox">
+            <label class="form-check-label" for="selectAllCheckbox">
+                Select All Visible
+            </label>
+        </div>
+        <span class="selection-count" id="selection-count">0 selected</span>
+    </div>
+    
+    <div class="bulk-actions-buttons">
+        <button class="btn btn-success btn-sm" id="bulkMarkFoundBtn" disabled>
+            <i class="bi bi-check-circle me-1"></i> Mark Found
+        </button>
+        <button class="btn btn-primary btn-sm" id="bulkRelocateBtn" disabled>
+            <i class="bi bi-geo-alt me-1"></i> Found & Relocate
+        </button>
+        <button class="btn btn-outline-secondary btn-sm" id="cancelSelectionBtn" disabled>
+            <i class="bi bi-x-lg me-1"></i> Cancel
+        </button>
+    </div>
+</div>
+
+<!-- Discrepancy List Container -->
+<div id="discrepancy-list">
+    <!-- Discrepancy items will be loaded here dynamically -->
+    <div class="loading-spinner">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3">Loading discrepancies...</p>
+    </div>
+</div>
+
+<!-- Modals -->
+<!-- Relocation Modal -->
+<div class="modal fade" id="relocationModal" tabindex="-1" aria-labelledby="relocationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="relocationModalLabel">Asset Found & Relocated</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="asset-info mb-3 fw-bold"></p>
+                <p id="relocationInfoText"></p>
+
+                <div class="form-group mb-3">
+                    <label for="roomSelect" class="form-label">New Location:</label>
+                    <select class="form-select" id="roomSelect" required>
+                        <option value="">Select a room...</option>
+                        <!-- Rooms will be populated dynamically -->
+                    </select>
+                    <div class="form-text">
+                        <span id="locationUpdateText">The asset(s) will be marked as Found and assigned location(s) updated.</span>
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="relocationNotes" class="form-label">Notes (optional):</label>
+                    <textarea class="form-control" id="relocationNotes" rows="3" placeholder="Add notes for this action..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmRelocationBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Modal -->
+<div class="modal fade" id="statusModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="statusTitle">Status Update</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="statusMessage">
+                <!-- Status message will be inserted here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- HTML Templates -->
+<!-- Discrepancy Item Template -->
+<template id="discrepancy-item-template">
+    <div class="discrepancy-item">
+        <div class="discrepancy-checkbox-container">
+            <input class="form-check-input discrepancy-checkbox" type="checkbox">
+        </div>
+        <div class="discrepancy-icon">
+            <i class="bi"></i>
+        </div>
+        <div class="discrepancy-content">
+            <h5 class="discrepancy-title"></h5>
+            <p class="discrepancy-details"></p>
+        </div>
+        <div class="action-buttons"></div>
+    </div>
+</template>
+
+<!-- Missing Asset Actions Template -->
+<template id="missing-actions-template">
+    <div class="btn-group action-group">
+        <!-- Primary Actions -->
+        <button class="btn btn-success btn-sm mark-found-btn d-flex align-items-center"
+                data-tooltip="Mark Found in Original Location">
+            <i class="bi bi-check-circle me-1"></i>
+            <span class="d-none d-md-inline">Found</span>
+        </button>
+
+        <button class="btn btn-primary btn-sm found-relocate-btn d-flex align-items-center"
+                data-tooltip="Find & Move to New Location">
+            <i class="bi bi-geo-alt me-1"></i>
+            <span class="d-none d-md-inline">Reassign</span>
+        </button>
+
+        <!-- Dropdown for Less Common Actions -->
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary btn-sm dropdown-toggle d-flex align-items-center"
+                    type="button"
+                    data-tooltip="More Actions"
+                    data-bs-toggle="dropdown">
+                <i class="bi bi-three-dots-vertical"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                    <button class="dropdown-item mark-lost-btn text-danger">
+                        <i class="bi bi-x-circle me-2"></i>Mark Lost
+                    </button>
+                </li>
+                <li>
+                    <a href="#" class="dropdown-item asset-details-link">
+                        <i class="bi bi-info-circle me-2"></i>Details
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</template>
+
+<!-- Misplaced Asset Actions Template -->
+<template id="misplaced-actions-template">
+    <div class="btn-group action-group">
+        <!-- Primary Actions -->
+        <button class="btn btn-success btn-sm mark-found-btn d-flex align-items-center"
+                data-tooltip="Mark Found in Original Location">
+            <i class="bi bi-check-circle me-1"></i>
+            <span class="d-none d-md-inline">Found</span>
+        </button>
+
+        <button class="btn btn-primary btn-sm misplaced-reassign-btn d-flex align-items-center"
+                data-tooltip="Update Record to Match Current Location">
+            <i class="bi bi-geo-alt me-1"></i>
+            <span class="d-none d-md-inline">Reassign</span>
+        </button>
+
+        <!-- Dropdown for Less Common Actions -->
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary btn-sm dropdown-toggle d-flex align-items-center"
+                    type="button"
+                    data-tooltip="More Actions"
+                    data-bs-toggle="dropdown">
+                <i class="bi bi-three-dots-vertical"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                    <a href="#" class="dropdown-item asset-details-link">
+                        <i class="bi bi-info-circle me-2"></i>Details
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</template>
+
+<!-- Empty State Template -->
+<template id="empty-state-template">
+    <div class="empty-state">
+        <i class="bi bi-check-circle"></i>
+        <p>No discrepancies found with the current filter.</p>
+    </div>
+</template>
+
+<!-- Loading State Template -->
+<template id="loading-template">
+    <div class="loading-spinner">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3">Loading discrepancies...</p>
+    </div>
+</template>
+
+<!-- Error State Template -->
+<template id="error-template">
+    <div class="alert alert-danger">
+        <strong>Error:</strong> <span class="error-message"></span>
+    </div>
+</template>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/discrepancy.js') }}"></script>
+{% endblock %}

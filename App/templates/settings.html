@@ -1,0 +1,420 @@
+{% extends "layout.html" %}
+
+{% block title %}iGOVTT - Settings{% endblock %}
+
+{% block page_css %}
+    <link href="{{ url_for('static', filename='css/settings.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <h2 class="mb-4">Settings</h2>
+
+    <!-- Settings Tabs -->
+    <ul class="nav nav-tabs mb-4" id="settingsTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general-content" type="button" role="tab" aria-controls="general-content" aria-selected="true">
+                General
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="location-tab" data-bs-toggle="tab" data-bs-target="#location-content" type="button" role="tab" aria-controls="location-content" aria-selected="false">
+                Location Management
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="user-management-tab" data-bs-toggle="tab" data-bs-target="#user-management-content" type="button" role="tab" aria-controls="user-management-content" aria-selected="false">
+                User Management
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="settingsTabsContent">
+        <!-- General Settings Tab -->
+        <div class="tab-pane fade show active" id="general-content" role="tabpanel" aria-labelledby="general-tab">
+            <div class="row">
+                <!-- Account Settings -->
+                <div class="col-lg-6">
+                    <div class="settings-card">
+                        <div class="settings-header">
+                            <i class="bi bi-person-gear"></i> Account Settings
+                        </div>
+
+                        <form id="accountSettingsForm">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" name="username" value="{{current_user.username}}">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{current_user.email}}">
+                            </div>
+
+                            <hr class="my-4">
+
+                            <div class="mb-3">
+                                <label for="currentPassword" class="form-label">Current Password</label>
+                                <input type="password" class="form-control" id="currentPassword" name="currentPassword">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="newPassword" class="form-label">New Password</label>
+                                <input type="password" class="form-control" id="newPassword" name="newPassword">
+                                <div class="form-text">Leave blank if you don't want to change your password.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword">
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Save Account Changes</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- CSV Upload Section -->
+                <div class="col-lg-6">
+                    <div class="settings-card">
+                        <div class="settings-header">
+                            <i class="bi bi-file-earmark-spreadsheet"></i> CSV Uploads
+                        </div>
+
+                        <ul class="nav nav-tabs mb-3" id="csvTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="assets-tab" data-bs-toggle="tab" data-bs-target="#assets-upload" type="button" role="tab" aria-controls="assets-upload" aria-selected="true">Assets</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="locations-tab" data-bs-toggle="tab" data-bs-target="#locations-upload" type="button" role="tab" aria-controls="locations-upload" aria-selected="false">Locations</button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="csvTabsContent">
+                            <!-- Assets CSV Upload -->
+                            <div class="tab-pane fade show active" id="assets-upload" role="tabpanel" aria-labelledby="assets-tab">
+                                <form id="assetCsvUploadForm" enctype="multipart/form-data">
+                                    <div class="csv-upload-zone" id="assetCsvDropZone">
+                                        <i class="bi bi-cloud-arrow-up"></i>
+                                        <p>Drag & Drop your assets CSV file here or click to browse</p>
+                                        <div class="file-input-wrapper">
+                                            <button type="button" class="btn btn-outline-primary">Select CSV File</button>
+                                            <input type="file" id="assetCsvFile" name="assetCsvFile" accept=".csv">
+                                        </div>
+                                    </div>
+
+                                    <div id="assetCsvFileName" class="mb-3 d-none">
+                                        <div class="alert alert-info d-flex align-items-center">
+                                            <i class="bi bi-file-earmark-text me-2"></i>
+                                            <span id="assetSelectedFileName"></span>
+                                            <button type="button" class="btn-close ms-auto" id="assetClearFileBtn"></button>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex align-items-center">
+                                        <button type="submit" class="btn btn-primary">Upload Asset CSV</button>
+                                        <a href="/api/download/asset-template" class="btn btn-link ms-auto">Download Template</a>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Locations CSV Upload -->
+                            <div class="tab-pane fade" id="locations-upload" role="tabpanel" aria-labelledby="locations-tab">
+                                <form id="locationCsvUploadForm" enctype="multipart/form-data">
+                                    <div class="csv-upload-zone" id="locationCsvDropZone">
+                                        <i class="bi bi-cloud-arrow-up"></i>
+                                        <p>Drag & Drop your locations CSV file here or click to browse</p>
+                                        <div class="file-input-wrapper">
+                                            <button type="button" class="btn btn-outline-primary">Select CSV File</button>
+                                            <input type="file" id="locationCsvFile" name="locationCsvFile" accept=".csv">
+                                        </div>
+                                    </div>
+
+                                    <div id="locationCsvFileName" class="mb-3 d-none">
+                                        <div class="alert alert-info d-flex align-items-center">
+                                            <i class="bi bi-file-earmark-text me-2"></i>
+                                            <span id="locationSelectedFileName"></span>
+                                            <button type="button" class="btn-close ms-auto" id="locationClearFileBtn"></button>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex align-items-center">
+                                        <button type="submit" class="btn btn-primary">Upload Location CSV</button>
+                                        <a href="/api/download/location-template" class="btn btn-link ms-auto">Download Template</a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Location Management Tab -->
+        <div class="tab-pane fade" id="location-content" role="tabpanel" aria-labelledby="location-tab">
+            <div class="settings-card">
+                <div class="settings-header">
+                    <i class="bi bi-geo-alt"></i> Location Management
+                </div>
+
+                <ul class="nav nav-tabs mb-3 hierarchy-tabs" id="locationTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="buildings-tab" data-bs-toggle="tab" data-bs-target="#buildings-content" type="button" role="tab" aria-controls="buildings-content" aria-selected="true">Buildings</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="floors-tab" data-bs-toggle="tab" data-bs-target="#floors-content" type="button" role="tab" aria-controls="floors-content" aria-selected="false">Floors</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="rooms-tab" data-bs-toggle="tab" data-bs-target="#rooms-content" type="button" role="tab" aria-controls="rooms-content" aria-selected="false">Rooms</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="locationTabsContent">
+                    <!-- Buildings Tab -->
+                    <div class="tab-pane fade show active" id="buildings-content" role="tabpanel" aria-labelledby="buildings-tab">
+                        <div class="location-tree mb-3" id="buildingsTree">
+                            <!-- Buildings will be loaded here dynamically -->
+                            <div class="text-center py-4" id="buildingsLoading">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-success add-location-btn" data-bs-toggle="modal" data-bs-target="#addBuildingModal">
+                            <i class="bi bi-plus-lg"></i> Add New Building
+                        </button>
+                    </div>
+
+                    <!-- Floors Tab -->
+                    <div class="tab-pane fade" id="floors-content" role="tabpanel" aria-labelledby="floors-tab">
+                        <div class="mb-3">
+                            <label for="buildingSelect" class="form-label">Select Building</label>
+                            <select class="form-select" id="buildingSelect">
+                                <option value="">Select a building...</option>
+                            </select>
+                        </div>
+
+                        <div class="location-tree mb-3" id="floorsTree">
+                            <!-- Floors will be loaded here dynamically -->
+                            <div class="text-center py-4" id="floorsMessage">
+                                <p>Please select a building to view its floors</p>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-success add-location-btn" id="addFloorBtn" data-bs-toggle="modal" data-bs-target="#addFloorModal" disabled>
+                            <i class="bi bi-plus-lg"></i> Add New Floor
+                        </button>
+                    </div>
+
+                    <!-- Rooms Tab -->
+                    <div class="tab-pane fade" id="rooms-content" role="tabpanel" aria-labelledby="rooms-tab">
+                        <div class="mb-3">
+                            <label for="floorBuildingSelect" class="form-label">Select Building</label>
+                            <select class="form-select" id="floorBuildingSelect">
+                                <option value="">Select a building...</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="floorSelect" class="form-label">Select Floor</label>
+                            <select class="form-select" id="floorSelect" disabled>
+                                <option value="">First select a building...</option>
+                            </select>
+                        </div>
+
+                        <div class="location-tree mb-3" id="roomsTree">
+                            <!-- Rooms will be loaded here dynamically -->
+                            <div class="text-center py-4" id="roomsMessage">
+                                <p>Please select a floor to view its rooms</p>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-success add-location-btn" id="addRoomBtn" data-bs-toggle="modal" data-bs-target="#addRoomModal" disabled>
+                            <i class="bi bi-plus-lg"></i> Add New Room
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Management Tab -->
+        <div class="tab-pane fade" id="user-management-content" role="tabpanel" aria-labelledby="user-management-tab">
+            <div class="settings-card">
+                <div class="settings-header">
+                    <i class="bi bi-people"></i> User Management
+                </div>
+
+                <div class="user-list mb-3" id="userList">
+                    <!-- Users will be loaded here dynamically -->
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                    <i class="bi bi-person-plus"></i> Add New User
+                </button>
+            </div>
+        </div>
+    </div> <!-- End of Tab Content -->
+
+    <!-- Modals (Keep these within the content block or move them to a separate block if needed) -->
+
+    <!-- Add Building Modal -->
+    <div class="modal fade" id="addBuildingModal" tabindex="-1" aria-labelledby="addBuildingModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addBuildingModalLabel">Add New Building</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addBuildingForm" onsubmit="return false;"> <!-- Added semicolon -->
+                        <div class="mb-3">
+                            <label for="buildingName" class="form-label">Building Name</label>
+                            <input type="text" class="form-control" id="buildingName" name="buildingName" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveBuildingBtn">Save Building</button>
+                    <button type="button" class="btn btn-success" id="updateBuildingBtn" style="display:none;">Update Building</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Floor Modal -->
+    <div class="modal fade" id="addFloorModal" tabindex="-1" aria-labelledby="addFloorModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addFloorModalLabel">Add New Floor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addFloorForm">
+                        <div class="mb-3">
+                            <label for="modalBuildingSelect" class="form-label">Building</label>
+                            <select class="form-select" id="modalBuildingSelect" disabled>
+                                <!-- Will be populated automatically -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="floorName" class="form-label">Floor Name</label>
+                            <input type="text" class="form-control" id="floorName" name="floorName" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveFloorBtn">Save Floor</button>
+                    <button type="button" class="btn btn-success" id="updateFloorBtn" style="display:none;">Update Floor</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Room Modal -->
+    <div class="modal fade" id="addRoomModal" tabindex="-1" aria-labelledby="addRoomModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addRoomModalLabel">Add New Room</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addRoomForm">
+                        <div class="mb-3">
+                            <label for="modalFloorBuildingSelect" class="form-label">Building</label>
+                            <select class="form-select" id="modalFloorBuildingSelect" disabled>
+                                <!-- Will be populated automatically -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="modalFloorSelect" class="form-label">Floor</label>
+                            <select class="form-select" id="modalFloorSelect" disabled>
+                                <!-- Will be populated automatically -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="roomName" class="form-label">Room Name</label>
+                            <input type="text" class="form-control" id="roomName" name="roomName" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveRoomBtn">Save Room</button>
+                    <button type="button" class="btn btn-success" id="updateRoomBtn" style="display:none;">Update Room</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addUserModalLabel">Add New User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createUserForm" onsubmit="return false;"> <!-- Added semicolon -->
+                        <div class="mb-3">
+                            <label for="newUserEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="newUserEmail" name="newUserEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newUserUsername" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="newUserUsername" name="newUserUsername" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newUserPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="newUserPassword" name="newUserPassword" required>
+                            <div class="password-strength-meter mt-2">
+                                <div class="strength"></div>
+                            </div>
+                            <div id="passwordStrengthText" class="password-feedback"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirmUserPassword" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="confirmUserPassword" name="confirmUserPassword" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveUserBtn">Create User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Alert Modal -->
+    <div class="modal fade" id="statusModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="statusTitle">Status Update</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="statusMessage">
+                    <!-- Status message will be inserted here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,333 @@
+/* Inventory Page Specific Styles */
+
+/* Layout */
+.content-area {
+    padding: 2rem;
+    width: calc(100% - 250px);
+    box-sizing: border-box;
+}
+
+/* Search Container */
+.search-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    width: 100%;
+    background-color: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* Search Bar */
+.search-bar {
+    display: flex;
+    flex-grow: 1;
+    max-width: 500px;
+    margin-right: 1rem;
+}
+
+.search-bar input {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    padding-left: 12px;
+}
+
+.search-button {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* Action Container */
+.action-container {
+    display: flex;
+    gap: 10px;
+    margin-left: auto;
+}
+
+/* Buttons */
+.add-asset-btn {
+    background-color: var(--success-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.add-asset-btn:hover {
+    background-color: #218838;
+    color: white;
+    transform: translateY(-1px);
+}
+
+.add-csv-btn {
+    background-color: var(--primary-color, #0d6efd);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.add-csv-btn:hover {
+    background-color: #0a58ca;
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Filter Section */
+.filter-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+    width: 100%;
+}
+
+.filter-item {
+    display: flex;
+    align-items: center;
+    background-color: #f8f9fa;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: #555;
+    transition: all 0.2s ease;
+}
+
+.filter-item.active {
+    background-color: var(--primary-blue);
+    color: white;
+}
+
+.filter-item:hover {
+    background-color: #e9ecef;
+    cursor: pointer;
+}
+
+.filter-item.active:hover {
+    background-color: #0069d9;
+}
+
+.filter-reset {
+    color: #dc3545;
+    cursor: pointer;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.filter-reset:hover {
+    text-decoration: underline;
+}
+
+.filter-dropdown {
+    position: relative;
+}
+
+.filter-dropdown .dropdown-menu {
+    padding: 0.5rem;
+    min-width: 220px;
+}
+
+.filter-dropdown .dropdown-item-custom {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.filter-dropdown .dropdown-item-custom:hover {
+    background-color: #f8f9fa;
+}
+
+.filter-dropdown .dropdown-item-custom.active {
+    background-color: rgba(0, 123, 255, 0.1);
+    color: var(--primary-blue);
+}
+
+/* Inventory Table */
+.inventory-table {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+}
+
+.inventory-table th {
+    background: var(--bg-light);
+    padding: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.inventory-table th:hover {
+    background: #edf2f7;
+}
+
+.inventory-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.inventory-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.inventory-table td {
+    vertical-align: middle;
+    padding: 12px 16px;
+}
+
+/* Status Indicators */
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.status-good { background: var(--success-color); }
+.status-missing { background: var(--danger-color); }
+.status-misplaced { background: var(--warning-color); }
+.status-lost { background: #dc3545; } /* Danger red */
+.status-unassigned { background: #6c757d; } /* Grey */
+
+/* Status indicator in table - less overwhelming */
+.status-indicator {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    background-color: transparent;
+    border: 1px solid transparent;
+}
+
+.status-indicator.status-good {
+    color: var(--success-color);
+    border-color: var(--success-color);
+    background-color: rgba(40, 167, 69, 0.1);
+}
+
+.status-indicator.status-missing {
+    color: var(--danger-color);
+    border-color: var(--danger-color);
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.status-indicator.status-misplaced {
+    color: #e67e22; /* Darker orange */
+    border-color: var(--warning-color);
+    background-color: rgba(241, 196, 15, 0.1);
+}
+
+.status-indicator.status-lost {
+    color: #dc3545; /* Danger red */
+    border-color: #dc3545;
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.status-indicator.status-unassigned {
+    color: #495057; /* Darker grey */
+    border-color: #6c757d;
+    background-color: rgba(108, 117, 125, 0.1);
+}
+
+/* Modals */
+#addAssetModal .form-label {
+    font-weight: 500;
+}
+
+.modal-header, .modal-footer {
+    border-color: rgba(0,0,0,0.05);
+}
+
+/* Active Filters Display */
+.active-filters {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.active-filter-tag {
+    display: inline-flex;
+    align-items: center;
+    background-color: #e9f5ff;
+    color: var(--primary-blue);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 0.8rem;
+    gap: 5px;
+}
+
+.active-filter-tag .remove-filter {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: rgba(0, 123, 255, 0.2);
+    transition: all 0.2s ease;
+}
+
+.active-filter-tag .remove-filter:hover {
+    background-color: rgba(0, 123, 255, 0.4);
+}
+
+/* Responsive Styles */
+@media (max-width: 992px) {
+    .search-bar {
+        max-width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .filter-section {
+        margin-top: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .content-area {
+        width: 100%;
+        margin-left: 0;
+        padding: 1rem;
+    }
+    
+    .action-container {
+        width: 100%;
+        justify-content: flex-end;
+        margin-top: 10px;
+    }
+    
+    .search-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-bar {
+        width: 100%;
+        margin-right: 0;
+    }
+}

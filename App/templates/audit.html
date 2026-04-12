@@ -1,0 +1,232 @@
+{% extends "layout.html" %}
+
+{% set active_page = 'audit' %}
+
+{% block title %}iGOVTT - Area Audit{% endblock %}
+
+{% block page_css %}
+<link href="{{ url_for('static', filename='css/audit.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Area Audit</h2>
+
+<!-- Selection Panels -->
+<div class="selection-panel">
+    <div class="mb-4">
+        <label for="buildingSelect" class="form-label">Select Building</label>
+        <select class="form-select" id="buildingSelect" onchange="AuditApp.loadFloors()">
+            <option selected>Select Building</option>
+            {% for building in buildings %}
+            <option value="{{ building.building_id }}">{{ building.building_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="mb-4" id="floorSelectContainer" style="display: none;">
+        <label for="floorSelect" class="form-label">Select Floor</label>
+        <select class="form-select" id="floorSelect" onchange="AuditApp.loadRooms()">
+            <option selected>Select Floor</option>
+            <!-- Floor options will be populated dynamically -->
+        </select>
+    </div>
+    
+    <div class="mb-4" id="roomSelectContainer" style="display: none;">
+        <label for="roomSelect" class="form-label">Select Room</label>
+        <select class="form-select" id="roomSelect" onchange="AuditApp.loadRoomAssets()">
+            <option selected>Select Room</option>
+            <!-- Room options will be populated dynamically -->
+        </select>
+    </div>
+</div>
+
+<!-- Audit Method Selection -->
+<div class="audit-method-buttons" id="auditMethodButtons" style="display: none;">
+    <button class="btn btn-light audit-method-btn" data-method="rfid">
+        <img src="{{ url_for('static', filename='images/rfid_icon.svg') }}" alt="RFID">
+        <span class="btn-text">RFID</span>
+    </button>
+    <button class="btn btn-light audit-method-btn" data-method="barcode">
+        <img src="{{ url_for('static', filename='images/barcode_icon.svg') }}" alt="Barcode">
+        <span class="btn-text">Barcode</span>
+    </button>
+    <button class="btn btn-light audit-method-btn" data-method="qrcode">
+        <img src="{{ url_for('static', filename='images/qrcode_icon.svg') }}" alt="QR Code">
+        <span class="btn-text">QR Code</span>
+    </button>
+    <button class="btn btn-primary audit-method-btn" data-method="manual">
+        <img src="{{ url_for('static', filename='images/manual_icon.svg') }}" alt="Manual">
+        <span class="btn-text">Manual</span>
+    </button>
+</div>
+
+<!-- Search Container -->
+<div class="search-container" id="searchContainer" style="display: none;">
+    <!-- Scan Indicators -->
+    <div id="scanIndicatorContainer"></div>
+    
+    <!-- Manual search form -->
+    <form id="manualSearchForm" onsubmit="event.preventDefault(); AuditApp.manualSearchAsset(); return false;">
+        <div class="manual-search-group" id="manualSearchGroup">
+            <input type="text" class="form-control" id="searchInput" placeholder="Enter asset ID...">
+            <button class="btn btn-outline-secondary" id="manualSearchButton" type="button">
+                <i class="bi bi-search"></i> Search
+            </button>
+        </div>
+    </form>
+    
+    <!-- Audit Controls -->
+    <div class="audit-controls mt-3">
+        <div class="d-flex gap-2 w-100 align-items-stretch">
+            <!-- Primary Action Button (Start/Stop) -->
+            <button class="btn btn-success flex-grow-1" id="toggleRoomAudit" type="button">
+                <i class="bi bi-play-circle me-2"></i>Start Room Audit
+            </button>
+            
+            <!-- Secondary Action Button (Cancel) -->
+            <button class="btn btn-outline-danger" id="cancelRoomAudit" type="button" 
+                    title="Abort audit without saving results" style="display: none;">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Scan Message Area -->
+    <div id="scanMessageContainer"></div>
+</div>
+
+<!-- Expected Assets List -->
+<div id="assetList" class="assets-container" style="display: none;">
+    <h4><i class="bi bi-clipboard-check"></i> Expected Assets in Room</h4>
+    <div id="scanCounterContainer"></div>
+    <div class="inventory-table">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Asset ID</th>
+                    <th>Brand/Model</th>
+                    <th>Assignee</th>
+                    <th>Status</th>
+                    <th>Last Updated</th>
+                    <th>Found</th>
+                </tr>
+            </thead>
+            <tbody id="expectedAssetsTableBody">
+                <!-- Expected assets will be populated dynamically -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Scanned Assets List -->
+<div id="scannedAssetsList" class="assets-container" style="display: none;">
+    <h4><i class="bi bi-upc-scan"></i> Recently Scanned</h4>
+    <div class="inventory-table">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Asset ID</th>
+                    <th>Brand/Model</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Assignee</th>
+                    <th>Scan Method</th> 
+                    <th>Last Updated</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="scannedAssetsTableBody">
+                <!-- Scanned assets will be populated here -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- HTML Templates -->
+<!-- Scan Indicator Template -->
+<template id="scan-indicator-template">
+    <div class="scan-indicator alert alert-info">
+        <i class="bi"></i>
+        <div>
+            <strong class="indicator-title"></strong>
+            <br>
+            <span class="indicator-text"></span>
+        </div>
+    </div>
+</template>
+
+<!-- Scan Counter Template -->
+<template id="scan-counter-template">
+    <div class="scan-counter alert alert-primary">
+        <div class="d-flex justify-content-between align-items-center">
+            <strong class="counter-title">Asset Scan Progress:</strong>
+            <span class="counter-text">0 of 0 assets found (0%)</span>
+        </div>
+        <div class="progress scan-progress-bar">
+            <div class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+        </div>
+    </div>
+</template>
+
+<!-- Scan Message Template -->
+<template id="scan-message-template">
+    <div class="scan-message alert">
+        <i class="bi"></i>
+        <span class="message-text"></span>
+    </div>
+</template>
+
+<!-- Expected Asset Row Template -->
+<template id="expected-asset-row-template">
+    <tr>
+        <td class="asset-description"></td>
+        <td class="asset-id"></td>
+        <td class="asset-brand-model"></td>
+        <td class="asset-assignee"></td>
+        <td class="asset-status">
+            <span class="status-dot"></span>
+            <span class="status-text"></span>
+        </td>
+        <td class="asset-last-updated"></td>
+        <td class="asset-found-status"></td>
+    </tr>
+</template>
+
+<!-- Scanned Asset Row Template -->
+<template id="scanned-asset-row-template">
+    <tr>
+        <td class="asset-description"></td>
+        <td class="asset-id"></td>
+        <td class="asset-brand-model"></td>
+        <td class="asset-location"></td>
+        <td class="asset-status">
+            <span class="status-dot"></span>
+            <span class="status-text"></span>
+        </td>
+        <td class="asset-assignee"></td>
+        <td class="asset-scan-method"></td>
+        <td class="asset-last-updated"></td>
+        <td class="asset-actions">
+            <button type="button" class="btn btn-sm btn-outline-danger undo-scan-btn">
+                <i class="bi bi-arrow-counterclockwise"></i> Undo
+            </button>
+        </td>
+    </tr>
+</template>
+
+<!-- Empty State Template -->
+<template id="empty-state-template">
+    <tr>
+        <td colspan="7" class="text-center py-4">
+            <i class="bi bi-info-circle text-muted d-block mb-2" style="font-size: 2rem;"></i>
+            <p class="text-muted">No assets found</p>
+        </td>
+    </tr>
+</template>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/audit.js') }}"></script>
+{% endblock %}
